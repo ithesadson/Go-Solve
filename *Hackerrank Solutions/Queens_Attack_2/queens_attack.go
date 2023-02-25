@@ -1,62 +1,59 @@
 package main
 
-import (
-	"fmt"
-)
+import "fmt"
 
 func main() {
-	var n, k, rq, cq, r, c int32
-	fmt.Scanf("%d %d", &n, &k)   //Scan n and k
-	fmt.Scanf("%d %d", &rq, &cq) //Scan r_q and c_q
-
-	obstacles := [][]int32{}
-	for i := 0; i < int(k); i++ {
-		fmt.Scanf("%d %d", &r, &c) //Scan obstacles
-		obstacles = append(obstacles, []int32{r, c})
-	}
-	fmt.Println(queensAttack(n, k, rq, cq, obstacles))
+	slice := [][]int32{{2, 2}, {2, 3}, {2, 4}, {3, 2},
+		{3, 4}, {4, 2}, {4, 3}, {4, 4}, {5, 5}}
+	fmt.Println(queensAttack(6, 9, 3, 3, slice))
 }
 
 func queensAttack(n int32, k int32, r_q int32, c_q int32, obstacles [][]int32) int32 {
 	//Number of squares on the bottom, top and sides
-	var rmin, rmax, cmin, cmax int32
-	rmin = r_q - 1
-	rmax = n - r_q
-	cmin = c_q - 1
-	cmax = n - c_q
+	var row_min, row_max, column_min, column_max int32
+	row_min = r_q - 1
+	row_max = n - r_q
+	column_min = c_q - 1
+	column_max = n - c_q
 
 	//Number of cross squares
-	var tl, tr, bl, br int32
-	tl = min(r_q-1, c_q-1)
-	tr = min(r_q-1, n-c_q)
-	bl = min(n-r_q, c_q-1)
-	br = min(n-r_q, n-c_q)
+	var top_left, top_right, bottom_left, bottom_right int32
+	top_left = min(r_q-1, c_q-1)
+	top_right = min(r_q-1, n-c_q)
+	bottom_left = min(n-r_q, c_q-1)
+	bottom_right = min(n-r_q, n-c_q)
 
-	//Find blocked squares
+	//Find bottom_leftocked squares
 	if obstacles != nil {
 		for i := 0; i < len(obstacles); i++ {
-			r := obstacles[i][0]
-			c := obstacles[i][1]
-			if r == r_q && c < c_q {
-				rmin = min(rmin, c_q-c-1)
-			} else if r == r_q && c > c_q {
-				rmax = min(rmax, c-c_q-1)
-			} else if c == c_q && r < r_q {
-				cmin = min(cmin, r_q-r-1)
-			} else if c == c_q && r > r_q {
-				cmax = min(cmax, r-r_q-1)
-			} else if r-r_q == c-c_q && r < r_q {
-				tl = min(tl, r_q-r-1)
-			} else if r-r_q == c-c_q && r > r_q {
-				br = min(br, r-r_q-1)
-			} else if r-r_q == c_q-c && r < r_q {
-				tr = min(tr, r_q-r-1)
-			} else if r-r_q == c_q-c && r > r_q {
-				bl = min(bl, r-r_q-1)
+			r := obstacles[i][0] // Obstacle Row
+			c := obstacles[i][1] // Obstacle Column
+
+			// ---if the queen's row is equal to the obstacle's row
+			if r == r_q && c < c_q { // If the same row and queen's column are larger
+				row_min = min(row_min, c_q-c-1)
+			} else if r == r_q && c > c_q { // If the same row and queen's column are smaller
+				row_max = min(row_max, c-c_q-1)
+
+			// ---if the queen's column is equal to the obstacle's column
+			} else if c == c_q && r < r_q { // If the same column and row of the queen is larger
+				column_min = min(column_min, r_q-r-1)
+			} else if c == c_q && r > r_q { // If the same column and queen's row is smaller
+				column_max = min(column_max, r-r_q-1)
+
+			// ---Are there any obstacles in the cross
+			} else if r-r_q == c-c_q && r < r_q { // r-r_q == c-c_q(Is it on the cross) , Top_Left Checking
+				top_left = min(top_left, r_q-r-1)
+			} else if r-r_q == c-c_q && r > r_q { // r-r_q == c-c_q(Is it on the cross) , Bottom_right Checking
+				bottom_right = min(bottom_right, r-r_q-1)
+			} else if r-r_q == c_q-c && r < r_q { // r-r_q == c-c_q(Is it on the cross) , Top_right Checking
+				top_right = min(top_right, r_q-r-1)
+			} else if r-r_q == c_q-c && r > r_q { // r-r_q == c-c_q(Is it on the cross) , Bottom_left Checking
+				bottom_left = min(bottom_left, r-r_q-1)
 			}
 		}
 	}
-	total := tl + tr + bl + br + rmin + rmax + cmin + cmax
+	total := top_left + top_right + bottom_left + bottom_right + row_min + row_max + column_min + column_max
 	return total
 }
 
